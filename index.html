@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cricket Scorecard - Team A vs Team B</title>
+
+  <style>
+    /* Basic reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: #050816;
+      color: #f8fafc;
+      display: flex;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 900px;
+      background: radial-gradient(circle at top, #111827 0, #020617 55%);
+      border-radius: 24px;
+      padding: 16px 16px 24px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Header */
+    .app-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: #e5e7eb;
+      flex-wrap: wrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+    }
+
+    .status-text {
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #22c55e;
+    }
+
+    .match-info {
+      margin-left: 8px;
+      font-weight: 500;
+      color: #cbd5f5;
+    }
+
+    /* Match card */
+    .match-card {
+      background: #020617;
+      border-radius: 20px;
+      padding: 14px;
+      box-shadow: 0 8px 25px rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      display: grid;
+      gap: 6px;
+    }
+
+    .team-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .team-name {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: #e5e7eb;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .team-score {
+      font-weight: 700;
+      font-size: 18px;
+      color: #f9fafb;
+    }
+
+    .overs {
+      font-size: 12px;
+      margin-left: 4px;
+      color: #9ca3af;
+    }
+
+    .match-summary {
+      margin-top: 4px;
+      font-size: 13px;
+      color: #f97316;
+      font-weight: 500;
+    }
+
+    .info-row {
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      gap: 4px;
+    }
+
+    .pill-label {
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-size: 10px;
+      color: #9ca3af;
+    }
+
+    .pill-value {
+      font-weight: 600;
+      font-size: 11px;
+      color: #e5e7eb;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      flex: 1;
+      min-width: 120px;
+      padding: 8px 0;
+      border-radius: 999px;
+      border: none;
+      background: rgba(15, 23, 42, 0.85);
+      color: #9ca3af;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, #22c55e, #0ea5e9);
+      color: #020617;
+      box-shadow: 0 8px 20px rgba(34, 197, 94, 0.5);
+    }
+
+    .tab-content {
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 20px;
+      padding: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      margin-top: 4px;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* Scorecard layout */
+    .innings-switch {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .innings-switch-label {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .innings-btn {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: none;
+      font-size: 12px;
+      cursor: pointer;
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5e7eb;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+    }
+
+    .innings-btn.active {
+      background: linear-gradient(135deg, #22c55e, #0ea5e9);
+      color: #020617;
+      border-color: transparent;
+    }
+
+    .innings-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .innings-block {
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.9);
+      padding: 8px;
+    }
+
+    @media (min-width: 720px) {
+      .innings-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .innings-block {
+        display: block !important;
+      }
+    }
+
+    /* Mobile: show only current innings block */
+    @media (max-width: 719px) {
+      .innings-block {
+        display: none;
+      }
+      .innings-block.is-current {
+        display: block;
+      }
+    }
+
+    .innings-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .innings-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(96, 165, 250, 0.7);
+      color: #bfdbfe;
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .innings-subtitle {
+      font-size: 11px;
+      font-weight: 500;
+      margin-top: 6px;
+      margin-bottom: 4px;
+      color: #9ca3af;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    .table thead {
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .table th,
+    .table td {
+      padding: 5px 4px;
+      text-align: right;
+    }
+
+    .table th:first-child,
+    .table td:first-child {
+      text-align: left;
+    }
+
+    .table th {
+      font-weight: 500;
+      color: #9ca3af;
+    }
+
+    .table tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.7);
+    }
+
+    .table tbody tr:nth-child(odd) {
+      background: rgba(15, 23, 42, 0.45);
+    }
+
+    .striker-dot {
+      color: #22c55e;
+      font-size: 10px;
+      margin-right: 4px;
+    }
+
+    .non-striker-dot {
+      color: #38bdf8;
+      font-size: 10px;
+      margin-right: 4px;
+    }
+
+    .out-text {
+      color: #f97316;
+      font-size: 9px;
+      margin-left: 4px;
+      text-transform: uppercase;
+    }
+
+    /* Controls */
+    .controls {
+      margin-bottom: 10px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px dashed rgba(148, 163, 184, 0.4);
+    }
+
+    .controls-title {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .score-btn {
+      flex: 1;
+      min-width: 60px;
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: none;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      background: rgba(15, 23, 42, 0.95);
+      color: #e5e7eb;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.9);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
+    }
+
+    .score-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.9);
+    }
+
+    .score-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.9);
+    }
+
+    .score-btn.primary {
+      background: linear-gradient(135deg, #22c55e, #0ea5e9);
+      color: #020617;
+    }
+
+    .score-btn.danger {
+      background: linear-gradient(135deg, #f97316, #ef4444);
+      color: #020617;
+    }
+
+    .score-btn.reset {
+      background: rgba(15, 23, 42, 0.9);
+      color: #9ca3af;
+    }
+
+    /* Ball timeline */
+    .ball-timeline {
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px dashed rgba(148, 163, 184, 0.4);
+    }
+
+    .timeline-title {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+
+    .timeline-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .ball-chip {
+      min-width: 18px;
+      text-align: center;
+      padding: 2px 4px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.95);
+      font-size: 11px;
+      color: #e5e7eb;
+    }
+
+    .over-separator {
+      padding: 0 4px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    /* Inputs */
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
+
+    .field {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .field-label {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+
+    .text-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      color: #e5e7eb;
+      padding: 4px 8px;
+      font-size: 11px;
+      outline: none;
+    }
+
+    .text-input::placeholder {
+      color: #6b7280;
+    }
+
+    select.text-input {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    /* Commentary & Info */
+    .commentary-list {
+      list-style: none;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .commentary-item {
+      padding-bottom: 6px;
+      border-bottom: 1px dashed rgba(148, 163, 184, 0.2);
+    }
+
+    .commentary-over {
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .commentary-text {
+      color: #d1d5db;
+    }
+
+    .info-text {
+      font-size: 13px;
+      color: #d1d5db;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .xi-list-title {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 6px;
+      margin-bottom: 4px;
+    }
+
+    .xi-list {
+      list-style: decimal;
+      margin-left: 16px;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: #e5e7eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="status-dot"></div>
+      <span class="status-text">Live</span>
+      <span class="match-info">
+        <span class="team-a-name">TEAM A</span> vs <span class="team-b-name">TEAM B</span>
+      </span>
+    </header>
+
+    <!-- Match card -->
+    <section class="match-card">
+      <div class="team-row">
+        <div class="team-name">
+          <span class="team-a-name">TEAM A</span>
+        </div>
+        <div class="team-score">
+          <span id="teamA-runs">0</span>-<span id="teamA-wkts">0</span>
+          <span class="overs">(<span id="teamA-overs">0.0</span>)</span>
+        </div>
+      </div>
+      <div class="team-row">
+        <div class="team-name">
+          <span class="team-b-name">TEAM B</span>
+        </div>
+        <div class="team-score">
+          <span id="teamB-runs">0</span>-<span id="teamB-wkts">0</span>
+          <span class="overs">(<span id="teamB-overs">0.0</span>)</span>
+        </div>
+      </div>
+      <div class="match-summary" id="match-summary">
+        Current innings: TEAM A • 0/0 (0.0)
+      </div>
+      <div class="info-row">
+        <span class="pill">
+          <span class="pill-label">CRR</span>
+          <span class="pill-value" id="current-rr">0.0</span>
+        </span>
+        <span class="pill" id="info-right-pill">
+          <span class="pill-label" id="info-right-label">STATUS</span>
+          <span class="pill-value" id="info-right-value">1st innings</span>
+        </span>
+      </div>
+    </section>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="scorecard">Scorecard</button>
+      <button class="tab" data-tab="commentary">Commentary</button>
+      <button class="tab" data-tab="info">Info</button>
+    </nav>
+
+    <main class="tab-content">
+      <!-- SCORECARD TAB -->
+      <section id="scorecard" class="tab-panel active">
+        <!-- Which innings is active -->
+        <div class="innings-switch">
+          <span class="innings-switch-label">Current batting:</span>
+          <button class="innings-btn active" data-innings="A" id="inningsA-btn">Team A</button>
+          <button class="innings-btn" data-innings="B" id="inningsB-btn">Team B</button>
+        </div>
+
+        <!-- Live controls -->
+        <div class="controls">
+          <div class="controls-title" id="controls-title">Live score controls (Team A innings)</div>
+          <div class="controls-row">
+            <button class="score-btn primary" data-runs="0">Dot</button>
+            <button class="score-btn primary" data-runs="1">+1</button>
+            <button class="score-btn primary" data-runs="2">+2</button>
+            <button class="score-btn primary" data-runs="3">+3</button>
+            <button class="score-btn primary" data-runs="4">+4</button>
+            <button class="score-btn primary" data-runs="6">+6</button>
+            <button class="score-btn danger" data-wicket="1">W</button>
+            <button class="score-btn reset" id="reset-innings-btn">Reset innings</button>
+          </div>
+
+          <!-- Current bowler -->
+          <div class="controls-title" style="margin-top:6px;">Current bowler (this innings)</div>
+          <div class="input-row">
+            <div class="field">
+              <select id="current-bowler-select" class="text-input"></select>
+            </div>
+          </div>
+
+          <!-- Ball timeline -->
+          <div class="ball-timeline">
+            <div class="timeline-title">Ball timeline (current innings)</div>
+            <div class="timeline-row" id="ball-timeline-row"></div>
+          </div>
+
+          <!-- Team names -->
+          <div class="controls-title" style="margin-top:8px;">Team names</div>
+          <div class="input-row">
+            <div class="field">
+              <div class="field-label">Team A name</div>
+              <input id="teamA-name-input" class="text-input" placeholder="Team A" />
+            </div>
+            <div class="field">
+              <div class="field-label">Team B name</div>
+              <input id="teamB-name-input" class="text-input" placeholder="Team B" />
+            </div>
+            <button class="score-btn reset" id="apply-teams-btn" style="min-width:80px;">Apply</button>
+          </div>
+        </div>
+
+        <!-- Two innings side by side -->
+        <div class="innings-grid">
+          <div class="innings-block" id="inningsA-block">
+            <div class="innings-title" id="inningsA-title">
+              Team A Innings • 0/0 (0.0)
+              <span class="innings-tag">1st Innings</span>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Batter</th>
+                  <th>R</th>
+                  <th>B</th>
+                  <th>4s</th>
+                  <th>6s</th>
+                  <th>SR</th>
+                </tr>
+              </thead>
+              <tbody id="teamA-batters-body"></tbody>
+            </table>
+
+            <div class="innings-subtitle" id="inningsA-bowling-title">Bowling – Team B</div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Bowler</th>
+                  <th>O</th>
+                  <th>M</th>
+                  <th>R</th>
+                  <th>W</th>
+                  <th>Econ</th>
+                </tr>
+              </thead>
+              <tbody id="teamA-bowling-body"></tbody>
+            </table>
+          </div>
+
+          <div class="innings-block" id="inningsB-block">
+            <div class="innings-title" id="inningsB-title">
+              Team B Innings • 0/0 (0.0)
+              <span class="innings-tag">2nd Innings</span>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Batter</th>
+                  <th>R</th>
+                  <th>B</th>
+                  <th>4s</th>
+                  <th>6s</th>
+                  <th>SR</th>
+                </tr>
+              </thead>
+              <tbody id="teamB-batters-body"></tbody>
+            </table>
+
+            <div class="innings-subtitle" id="inningsB-bowling-title">Bowling – Team A</div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Bowler</th>
+                  <th>O</th>
+                  <th>M</th>
+                  <th>R</th>
+                  <th>W</th>
+                  <th>Econ</th>
+                </tr>
+              </thead>
+              <tbody id="teamB-bowling-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- COMMENTARY TAB -->
+      <section id="commentary" class="tab-panel">
+        <ul class="commentary-list" id="commentary-list"></ul>
+      </section>
+
+      <!-- INFO TAB -->
+      <section id="info" class="tab-panel">
+        <p class="info-text">
+          Two-innings scorecard for <span class="team-a-name">TEAM A</span> vs
+          <span class="team-b-name">TEAM B</span>. Team A bats first and sets a target, Team B chases.
+        </p>
+
+        <div class="xi-list-title">Team A Playing XI</div>
+        <ul class="xi-list" id="teamA-xi-list"></ul>
+
+        <div class="xi-list-title">Team B Playing XI</div>
+        <ul class="xi-list" id="teamB-xi-list"></ul>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const MAX_PLAYERS = 11;
+    const MAX_OVERS = 20;
+
+    const teams = {
+      A: "TEAM A",
+      B: "TEAM B"
+    };
+
+    function makeEmptyInnings() {
+      const batters = [];
+      for (let i = 0; i < MAX_PLAYERS; i++) {
+        batters.push({
+          name: "Player " + (i + 1),
+          runs: 0,
+          balls: 0,
+          fours: 0,
+          sixes: 0,
+          out: false
+        });
+      }
+      return {
+        runs: 0,
+        wickets: 0,
+        balls: 0,
+        batters: batters,
+        strikerIndex: 0,
+        nonStrikerIndex: 1,
+        nextBatterIndex: 2,
+        ballEvents: []
+      };
+    }
+
+    function makeEmptyBowling(names) {
+      return names.map(function(name) {
+        return {
+          name: name,
+          balls: 0,
+          overs: 0,
+          maidens: 0,
+          runs: 0,
+          wickets: 0,
+          currentOverRuns: 0
+        };
+      });
+    }
+
+    const innings = {
+      A: makeEmptyInnings(), // Team A batting (1st innings)
+      B: makeEmptyInnings()  // Team B batting (2nd innings)
+    };
+
+    let bowlingFigures = {
+      A: makeEmptyBowling(innings.B.batters.map(function(b) { return b.name; })), // bowlers when A bats => Team B XI
+      B: makeEmptyBowling(innings.A.batters.map(function(b) { return b.name; }))  // bowlers when B bats => Team A XI
+    };
+
+    let currentBowlerIndex = { A: 0, B: 0 };
+    let currentInningsKey = "A"; // "A" or "B"
+
+    /* DOM ELEMENTS */
+    const teamNameSpansA = document.querySelectorAll(".team-a-name");
+    const teamNameSpansB = document.querySelectorAll(".team-b-name");
+
+    const teamARunsEl = document.getElementById("teamA-runs");
+    const teamAWktsEl = document.getElementById("teamA-wkts");
+    const teamAOversEl = document.getElementById("teamA-overs");
+
+    const teamBRunsEl = document.getElementById("teamB-runs");
+    const teamBWktsEl = document.getElementById("teamB-wkts");
+    const teamBOversEl = document.getElementById("teamB-overs");
+
+    const matchSummaryEl = document.getElementById("match-summary");
+    const crrEl = document.getElementById("current-rr");
+
+    const infoRightLabelEl = document.getElementById("info-right-label");
+    const infoRightValueEl = document.getElementById("info-right-value");
+
+    const ballTimelineRow = document.getElementById("ball-timeline-row");
+
+    const inningsABody = document.getElementById("teamA-batters-body");
+    const inningsBBody = document.getElementById("teamB-batters-body");
+    const inningsATitleEl = document.getElementById("inningsA-title");
+    const inningsBTitleEl = document.getElementById("inningsB-title");
+
+    const teamANameInput = document.getElementById("teamA-name-input");
+    const teamBNameInput = document.getElementById("teamB-name-input");
+    const applyTeamsBtn = document.getElementById("apply-teams-btn");
+
+    const teamAXiList = document.getElementById("teamA-xi-list");
+    const teamBXiList = document.getElementById("teamB-xi-list");
+
+    const inningsABtn = document.getElementById("inningsA-btn");
+    const inningsBBtn = document.getElementById("inningsB-btn");
+    const controlsTitleEl = document.getElementById("controls-title");
+    const resetInningsBtn = document.getElementById("reset-innings-btn");
+
+    const currentBowlerSelect = document.getElementById("current-bowler-select");
+
+    const inningsABlock = document.getElementById("inningsA-block");
+    const inningsBBlock = document.getElementById("inningsB-block");
+
+    const inningsABowlingTitleEl = document.getElementById("inningsA-bowling-title");
+    const inningsBBowlingTitleEl = document.getElementById("inningsB-bowling-title");
+    const inningsABowlingBody = document.getElementById("teamA-bowling-body");
+    const inningsBBowlingBody = document.getElementById("teamB-bowling-body");
+
+    const commentaryList = document.getElementById("commentary-list");
+
+    function formatOvers(balls) {
+      var overs = Math.floor(balls / 6);
+      var ballsPart = balls % 6;
+      return overs + "." + ballsPart;
+    }
+
+    function calculateCRR(runs, balls) {
+      if (balls === 0) return "0.0";
+      var overs = balls / 6;
+      return (runs / overs).toFixed(1);
+    }
+
+    function formatEcon(runs, balls) {
+      if (balls === 0) return "0.0";
+      var overs = balls / 6;
+      return (runs / overs).toFixed(1);
+    }
+
+    function updateTeamNamesUI() {
+      teamNameSpansA.forEach(function(el) { el.textContent = teams.A; });
+      teamNameSpansB.forEach(function(el) { el.textContent = teams.B; });
+      inningsABowlingTitleEl.textContent = "Bowling – " + teams.B;
+      inningsBBowlingTitleEl.textContent = "Bowling – " + teams.A;
+    }
+
+    function renderBattersTable(teamKey) {
+      var inn = innings[teamKey];
+      var tbody = teamKey === "A" ? inningsABody : inningsBBody;
+      tbody.innerHTML = "";
+
+      inn.batters.forEach(function(batter, idx) {
+        var sr = batter.balls === 0 ? "0.0" : ((batter.runs / batter.balls) * 100).toFixed(1);
+        var nameHtml = batter.name;
+
+        if (teamKey === currentInningsKey && !batter.out) {
+          if (idx === inn.strikerIndex) {
+            nameHtml = '<span class="striker-dot">●</span>' + batter.name;
+          } else if (idx === inn.nonStrikerIndex) {
+            nameHtml = '<span class="non-striker-dot">◯</span>' + batter.name;
+          }
+        }
+
+        if (batter.out) {
+          nameHtml += '<span class="out-text">out</span>';
+        }
+
+        var row = document.createElement("tr");
+        row.innerHTML =
+          "<td>" + nameHtml + "</td>" +
+          "<td>" + batter.runs + "</td>" +
+          "<td>" + batter.balls + "</td>" +
+          "<td>" + batter.fours + "</td>" +
+          "<td>" + batter.sixes + "</td>" +
+          "<td>" + sr + "</td>";
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderBowlingTable(inningsKey) {
+      var bowlers = bowlingFigures[inningsKey];
+      var tbody = inningsKey === "A" ? inningsABowlingBody : inningsBBowlingBody;
+      tbody.innerHTML = "";
+
+      bowlers.forEach(function(bowler) {
+        var oversText = formatOvers(bowler.balls);
+        var econ = formatEcon(bowler.runs, bowler.balls);
+        var row = document.createElement("tr");
+        row.innerHTML =
+          "<td>" + bowler.name + "</td>" +
+          "<td>" + oversText + "</td>" +
+          "<td>" + bowler.maidens + "</td>" +
+          "<td>" + bowler.runs + "</td>" +
+          "<td>" + bowler.wickets + "</td>" +
+          "<td>" + econ + "</td>";
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderTimeline() {
+      var inn = innings[currentInningsKey];
+      ballTimelineRow.innerHTML = "";
+      inn.ballEvents.forEach(function(symbol, idx) {
+        var span = document.createElement("span");
+        span.className = "ball-chip";
+        span.textContent = symbol;
+        ballTimelineRow.appendChild(span);
+
+        if ((idx + 1) % 6 === 0 && idx !== inn.ballEvents.length - 1) {
+          var sep = document.createElement("span");
+          sep.className = "over-separator";
+          sep.textContent = "|";
+          ballTimelineRow.appendChild(sep);
+        }
+      });
+    }
+
+    function renderXIs() {
+      teamAXiList.innerHTML = "";
+      innings.A.batters.forEach(function(b) {
+        var li = document.createElement("li");
+        li.textContent = b.name;
+        teamAXiList.appendChild(li);
+      });
+
+      teamBXiList.innerHTML = "";
+      innings.B.batters.forEach(function(b) {
+        var li = document.createElement("li");
+        li.textContent = b.name;
+        teamBXiList.appendChild(li);
+      });
+    }
+
+    function updateMatchCardTotals() {
+      var innA = innings.A;
+      var innB = innings.B;
+
+      teamARunsEl.textContent = innA.runs;
+      teamAWktsEl.textContent = innA.wickets;
+      teamAOversEl.textContent = formatOvers(innA.balls);
+
+      teamBRunsEl.textContent = innB.runs;
+      teamBWktsEl.textContent = innB.wickets;
+      teamBOversEl.textContent = formatOvers(innB.balls);
+    }
+
+    function updateInningsTitles() {
+      var innA = innings.A;
+      var innB = innings.B;
+
+      inningsATitleEl.childNodes[0].nodeValue =
+        teams.A + " Innings • " + innA.runs + "/" + innA.wickets + " (" + formatOvers(innA.balls) + ")";
+      inningsBTitleEl.childNodes[0].nodeValue =
+        teams.B + " Innings • " + innB.runs + "/" + innB.wickets + " (" + formatOvers(innB.balls) + ")";
+    }
+
+    function updateInningsBlockCurrentClass() {
+      inningsABlock.classList.toggle("is-current", currentInningsKey === "A");
+      inningsBBlock.classList.toggle("is-current", currentInningsKey === "B");
+    }
+
+    function buildBowlerSelectOptions() {
+      var bowlingTeamKey = currentInningsKey === "A" ? "B" : "A";
+      var sourceBatters = innings[bowlingTeamKey].batters;
+
+      bowlingFigures[currentInningsKey].forEach(function(bowler, i) {
+        bowler.name = sourceBatters[i].name;
+      });
+
+      var idx = currentBowlerIndex[currentInningsKey] || 0;
+      currentBowlerSelect.innerHTML = "";
+
+      bowlingFigures[currentInningsKey].forEach(function(bowler, i) {
+        var opt = document.createElement("option");
+        opt.value = i;
+        opt.textContent = bowler.name;
+        if (i === idx) opt.selected = true;
+        currentBowlerSelect.appendChild(opt);
+      });
+    }
+
+    function updateControlsTitle() {
+      var name = currentInningsKey === "A" ? teams.A : teams.B;
+      controlsTitleEl.textContent = "Live score controls (" + name + " innings)";
+    }
+
+    function updateSummaryAndInfoChips() {
+      var inn = innings[currentInningsKey];
+      var teamName = currentInningsKey === "A" ? teams.A : teams.B;
+      var oversText = formatOvers(inn.balls);
+      var label = "";
+      var value = "";
+
+      if (currentInningsKey === "A") {
+        // First innings
+        matchSummaryEl.textContent =
+          "1st innings: " + teamName + " • " + inn.runs + "/" + inn.wickets + " (" + oversText + ")";
+        label = "STATUS";
+        value = "1st innings";
+      } else {
+        // Second innings, chasing Team A's total
+        var firstInn = innings.A;
+        if (firstInn.balls === 0 && firstInn.runs === 0) {
+          // No first innings yet (edge case)
+          matchSummaryEl.textContent =
+            "Current innings: " + teamName + " • " + inn.runs + "/" + inn.wickets + " (" + oversText + ")";
+          label = "TARGET";
+          value = "—";
+        } else {
+          var target = firstInn.runs + 1;
+          var totalBalls = MAX_OVERS * 6;
+          var ballsLeft = totalBalls - inn.balls;
+          var runsNeeded = target - inn.runs;
+
+          if (inn.runs >= target) {
+            var wicketsInHand = 10 - inn.wickets;
+            matchSummaryEl.textContent =
+              teamName + " won by " + wicketsInHand + " wicket(s)";
+            label = "RESULT";
+            value = "Chase completed";
+          } else if (inn.balls >= totalBalls || inn.wickets >= 10) {
+            var margin = firstInn.runs - inn.runs;
+            matchSummaryEl.textContent =
+              teams.A + " won by " + margin + " run(s)";
+            label = "TARGET";
+            value = String(target);
+          } else {
+            var rrr = (runsNeeded > 0 && ballsLeft > 0)
+              ? (runsNeeded / (ballsLeft / 6)).toFixed(2)
+              : "0.0";
+            matchSummaryEl.textContent =
+              teamName + " need " + runsNeeded + " runs from " + ballsLeft + " balls";
+            label = "TARGET / RRR";
+            value = target + " / " + rrr;
+          }
+        }
+      }
+
+      crrEl.textContent = calculateCRR(inn.runs, inn.balls);
+      infoRightLabelEl.textContent = label;
+      infoRightValueEl.textContent = value;
+    }
+
+    function updateUI() {
+      updateTeamNamesUI();
+      updateMatchCardTotals();
+      updateInningsTitles();
+      renderBattersTable("A");
+      renderBattersTable("B");
+      renderBowlingTable("A");
+      renderBowlingTable("B");
+      renderTimeline();
+      renderXIs();
+      updateControlsTitle();
+      updateInningsBlockCurrentClass();
+      buildBowlerSelectOptions();
+      updateSummaryAndInfoChips();
+    }
+
+    function swapStrike(inn) {
+      var temp = inn.strikerIndex;
+      inn.strikerIndex = inn.nonStrikerIndex;
+      inn.nonStrikerIndex = temp;
+    }
+
+    function addBall(runsScored, isWicket) {
+      var inn = innings[currentInningsKey];
+      var bowlers = bowlingFigures[currentInningsKey];
+      var bowlerIdx = currentBowlerIndex[currentInningsKey] || 0;
+      var bowler = bowlers[bowlerIdx];
+      var totalBalls = MAX_OVERS * 6;
+
+      if (inn.balls >= totalBalls) return;
+      if (inn.wickets >= 10) return;
+
+      inn.balls += 1;
+      inn.runs += runsScored;
+
+      var striker = inn.batters[inn.strikerIndex];
+      if (!striker.out) {
+        striker.balls += 1;
+        striker.runs += runsScored;
+        if (runsScored === 4) striker.fours += 1;
+        if (runsScored === 6) striker.sixes += 1;
+      }
+
+      var symbol;
+      if (isWicket) symbol = "W";
+      else if (runsScored === 0) symbol = ".";
+      else symbol = String(runsScored);
+      inn.ballEvents.push(symbol);
+
+      bowler.balls += 1;
+      bowler.runs += runsScored;
+      bowler.currentOverRuns += runsScored;
+      if (isWicket) bowler.wickets += 1;
+
+      if (bowler.balls % 6 === 0) {
+        bowler.overs = bowler.balls / 6;
+        if (bowler.currentOverRuns === 0) {
+          bowler.maidens += 1;
+        }
+        bowler.currentOverRuns = 0;
+      }
+
+      if (isWicket) {
+        striker.out = true;
+        inn.wickets += 1;
+        if (inn.nextBatterIndex < MAX_PLAYERS) {
+          inn.strikerIndex = inn.nextBatterIndex;
+          inn.nextBatterIndex += 1;
+        }
+      } else {
+        if (runsScored % 2 === 1) {
+          swapStrike(inn);
+        }
+      }
+
+      if (inn.balls % 6 === 0) {
+        swapStrike(inn);
+      }
+
+      updateUI();
+    }
+
+    /* EVENTS */
+
+    // Run buttons
+    document.querySelectorAll(".score-btn.primary").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var runs = parseInt(btn.dataset.runs, 10);
+        addBall(runs, false);
+      });
+    });
+
+    // Wicket
+    var wicketBtn = document.querySelector('.score-btn[data-wicket="1"]');
+    wicketBtn.addEventListener("click", function() {
+      addBall(0, true);
+    });
+
+    // Reset current innings
+    resetInningsBtn.addEventListener("click", function() {
+      var key = currentInningsKey;
+      var inn = innings[key];
+      var bowlers = bowlingFigures[key];
+
+      inn.runs = 0;
+      inn.wickets = 0;
+      inn.balls = 0;
+      inn.ballEvents = [];
+      inn.strikerIndex = 0;
+      inn.nonStrikerIndex = 1;
+      inn.nextBatterIndex = 2;
+
+      inn.batters.forEach(function(batter) {
+        batter.runs = 0;
+        batter.balls = 0;
+        batter.fours = 0;
+        batter.sixes = 0;
+        batter.out = false;
+      });
+
+      bowlers.forEach(function(bowler) {
+        bowler.balls = 0;
+        bowler.overs = 0;
+        bowler.maidens = 0;
+        bowler.runs = 0;
+        bowler.wickets = 0;
+        bowler.currentOverRuns = 0;
+      });
+
+      updateUI();
+    });
+
+    // Apply team names
+    applyTeamsBtn.addEventListener("click", function() {
+      var aVal = teamANameInput.value.trim();
+      var bVal = teamBNameInput.value.trim();
+      if (aVal) teams.A = aVal;
+      if (bVal) teams.B = bVal;
+      updateUI();
+    });
+
+    // Switch innings
+    inningsABtn.addEventListener("click", function() {
+      currentInningsKey = "A";
+      inningsABtn.classList.add("active");
+      inningsBBtn.classList.remove("active");
+      updateUI();
+    });
+
+    inningsBBtn.addEventListener("click", function() {
+      currentInningsKey = "B";
+      inningsBBtn.classList.add("active");
+      inningsABtn.classList.remove("active");
+      updateUI();
+    });
+
+    // Change current bowler
+    currentBowlerSelect.addEventListener("change", function() {
+      currentBowlerIndex[currentInningsKey] = parseInt(currentBowlerSelect.value, 10);
+      updateUI();
+    });
+
+    // Commentary (static demo)
+    var commentaryData = [
+      { over: "0.1", text: "Dot ball outside off, left alone." },
+      { over: "0.2", text: "Driven down the ground for a single." },
+      { over: "0.3", text: "FOUR! Punched through covers." },
+      { over: "0.4", text: "Short ball pulled for two." }
+    ];
+
+    commentaryData.forEach(function(item) {
+      var li = document.createElement("li");
+      li.className = "commentary-item";
+      li.innerHTML =
+        '<div class="commentary-over">' + item.over + '</div>' +
+        '<div class="commentary-text">' + item.text + '</div>';
+      commentaryList.appendChild(li);
+    });
+
+    // Tabs
+    var tabs = document.querySelectorAll(".tab");
+    var panels = document.querySelectorAll(".tab-panel");
+
+    tabs.forEach(function(tab) {
+      tab.addEventListener("click", function() {
+        tabs.forEach(function(t) { t.classList.remove("active"); });
+        panels.forEach(function(p) { p.classList.remove("active"); });
+        tab.classList.add("active");
+        var id = tab.dataset.tab;
+        document.getElementById(id).classList.add("active");
+      });
+    });
+
+    // Initial render
+    updateUI();
+  </script>
+</body>
+</html>
